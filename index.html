@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英検対応！英単語タイピングマスター</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts Inter & Noto Sans JP -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'Noto Sans JP', 'sans-serif'],
+                        mono: ['Courier New', 'monospace']
+                    },
+                    animation: {
+                        'shake': 'shake 0.3s cubic-bezier(.36,.07,.19,.97) both',
+                        'pop': 'pop 0.15s ease-out',
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        shake: {
+                            '10%, 90%': { transform: 'translate3d(-1px, 0, 0)' },
+                            '20%, 80%': { transform: 'translate3d(2px, 0, 0)' },
+                            '30%, 50%, 70%': { transform: 'translate3d(-4px, 0, 0)' },
+                            '40%, 60%': { transform: 'translate3d(4px, 0, 0)' },
+                        },
+                        pop: {
+                            '0%': { transform: 'scale(0.95)' },
+                            '50%': { transform: 'scale(1.05)' },
+                            '100%': { transform: 'scale(1)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .dark .glass-panel {
+            background: rgba(30, 41, 59, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        /* Custom scrollbar for table */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(156, 163, 175, 0.5);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(107, 114, 128, 0.8);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-950/60 sticky top-0 z-50 backdrop-blur-md">
+        <div class="max-w-5xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="showLevelSelect()">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid font-bold text-white text-xl">E</i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-bold tracking-tight bg-gradient-to-r from-white via-indigo-200 to-indigo-400 bg-clip-text text-transparent">
+                        英検単語タイピング
+                    </h1>
+                    <p class="text-xs text-slate-400">EIKEN Vocabulary Typing</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-2">
+                <button id="soundToggleBtn" onclick="toggleSound()" class="p-2.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition">
+                    <i class="fa-solid fa-volume-high text-sm" id="soundIcon"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 py-8 w-full flex-grow flex items-center justify-center">
+
+        <!-- SCREEN 1: LEVEL SELECTION -->
+        <section id="levelScreen" class="w-full max-w-2xl animate-pop">
+            <div class="text-center mb-8">
+                <h2 class="text-3xl font-extrabold text-white mb-3">挑戦するレベルを選択</h2>
+                <p class="text-slate-400 text-sm">目標の英検級に合わせて、10問のタイピング問題が出題されます。</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <!-- Level Cards -->
+                <button onclick="startGame('5')" class="group p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 hover:border-indigo-500 hover:bg-slate-800 hover:shadow-xl hover:shadow-indigo-500/10 transition-all text-left flex items-center justify-between">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-500/20 text-emerald-400 mb-1">初級</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-indigo-400 transition">5級 <span class="text-sm font-normal text-slate-400">（中学初級）</span></h3>
+                        <p class="text-xs text-slate-400 mt-1">日常生活・基礎的な単語</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"></i>
+                </button>
+
+                <button onclick="startGame('4')" class="group p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 hover:border-indigo-500 hover:bg-slate-800 hover:shadow-xl hover:shadow-indigo-500/10 transition-all text-left flex items-center justify-between">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-emerald-500/20 text-emerald-300 mb-1">初級</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-indigo-400 transition">4級 <span class="text-sm font-normal text-slate-400">（中学中級）</span></h3>
+                        <p class="text-xs text-slate-400 mt-1">身近な話題・簡単な熟語</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"></i>
+                </button>
+
+                <button onclick="startGame('3')" class="group p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 hover:border-indigo-500 hover:bg-slate-800 hover:shadow-xl hover:shadow-indigo-500/10 transition-all text-left flex items-center justify-between">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-blue-500/20 text-blue-400 mb-1">中級</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-indigo-400 transition">3級 <span class="text-sm font-normal text-slate-400">（中学卒業）</span></h3>
+                        <p class="text-xs text-slate-400 mt-1">基本英文・常用英単語</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"></i>
+                </button>
+
+                <button onclick="startGame('pre2')" class="group p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 hover:border-indigo-500 hover:bg-slate-800 hover:shadow-xl hover:shadow-indigo-500/10 transition-all text-left flex items-center justify-between">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-blue-500/20 text-blue-300 mb-1">中級</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-indigo-400 transition">準2級 <span class="text-sm font-normal text-slate-400">（高校中級）</span></h3>
+                        <p class="text-xs text-slate-400 mt-1">日常会話・社会生活の語彙</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"></i>
+                </button>
+
+                <button onclick="startGame('2')" class="group p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 hover:border-indigo-500 hover:bg-slate-800 hover:shadow-xl hover:shadow-indigo-500/10 transition-all text-left flex items-center justify-between">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-purple-500/20 text-purple-400 mb-1">上級</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-indigo-400 transition">2級 <span class="text-sm font-normal text-slate-400">（高校卒業）</span></h3>
+                        <p class="text-xs text-slate-400 mt-1">社会性のある一般的な語彙</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"></i>
+                </button>
+
+                <button onclick="startGame('pre1')" class="group p-5 rounded-2xl bg-slate-800/80 border border-slate-700/60 hover:border-indigo-500 hover:bg-slate-800 hover:shadow-xl hover:shadow-indigo-500/10 transition-all text-left flex items-center justify-between">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-purple-500/20 text-purple-300 mb-1">上級</span>
+                        <h3 class="text-xl font-bold text-white group-hover:text-indigo-400 transition">準1級 <span class="text-sm font-normal text-slate-400">（大学中級）</span></h3>
+                        <p class="text-xs text-slate-400 mt-1">社会・学術的な実用的語彙</p>
+                    </div>
+                    <i class="fa-solid fa-chevron-right text-slate-500 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all"></i>
+                </button>
+
+                <button onclick="startGame('1')" class="sm:col-span-2 group p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-slate-800 to-amber-500/10 border border-amber-500/30 hover:border-amber-400 hover:shadow-xl hover:shadow-amber-500/10 transition-all text-left flex items-center justify-between">
+                    <div>
+                        <span class="inline-block px-2.5 py-0.5 rounded text-xs font-semibold bg-amber-500/20 text-amber-300 mb-1">最上級</span>
+                        <h3 class="text-xl font-bold text-amber-200 group-hover:text-amber-300 transition">1級 <span class="text-sm font-normal text-slate-300">（大学上級・プロレベル）</span></h3>
+                        <p class="text-xs text-slate-400 mt-1">高度なニュース・論文・専門語彙</p>
+                    </div>
+                    <i class="fa-solid fa-crown text-amber-400 group-hover:scale-110 transition-all"></i>
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: GAME SCREEN -->
+        <section id="gameScreen" class="w-full max-w-2xl hidden">
+            <!-- Progress & Stats Header -->
+            <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-4 mb-6 shadow-lg">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="flex items-center space-x-2">
+                        <span id="levelBadge" class="px-2.5 py-1 rounded bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase">準1級</span>
+                        <span id="questionCounter" class="text-slate-400 text-sm font-semibold">1 / 10 問</span>
+                    </div>
+                    <div class="flex items-center space-x-4 text-xs sm:text-sm">
+                        <div class="flex items-center text-slate-300">
+                            <i class="fa-regular fa-clock text-indigo-400 mr-1.5"></i>
+                            <span id="questionTimer" class="font-mono font-bold text-indigo-200">0.0s</span>
+                        </div>
+                        <div class="flex items-center text-slate-300">
+                            <i class="fa-solid fa-triangle-exclamation text-rose-400 mr-1.5"></i>
+                            <span id="missCounter" class="font-mono font-bold text-rose-300">0</span>
+                        </div>
+                    </div>
+                </div>
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-700/50 rounded-full h-2 overflow-hidden">
+                    <div id="progressBar" class="bg-gradient-to-r from-indigo-500 to-purple-500 h-full w-0 transition-all duration-300"></div>
+                </div>
+            </div>
+
+            <!-- Main Typing Card -->
+            <div id="wordDisplayContainer" class="bg-slate-800 border border-slate-700 rounded-3xl p-8 sm:p-12 text-center shadow-2xl relative overflow-hidden transition-all">
+                
+                <!-- Score Bubble -->
+                <div class="absolute top-4 right-4 bg-slate-900/60 border border-slate-700 px-3 py-1 rounded-full text-xs text-slate-400">
+                    現在の問スコア: <span id="currentScorePreview" class="text-amber-400 font-mono font-bold">1000</span> pt
+                </div>
+
+                <!-- Japanese Meaning -->
+                <div class="mb-6">
+                    <span class="text-xs font-bold text-indigo-400 uppercase tracking-widest block mb-1">日本語訳</span>
+                    <h3 id="japaneseMeaning" class="text-2xl sm:text-3xl font-extrabold text-white tracking-wide">
+                        読み込み中...
+                    </h3>
+                </div>
+
+                <!-- Word Typing Display -->
+                <div class="my-8 py-4 bg-slate-950/50 rounded-2xl border border-slate-800/80">
+                    <div id="wordDisplay" class="font-mono text-3xl sm:text-5xl font-bold tracking-wider flex justify-center items-center flex-wrap gap-x-1 sm:gap-x-2">
+                        <!-- Letters dynamically generated -->
+                    </div>
+                </div>
+
+                <!-- Action & Hint Controls -->
+                <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6">
+                    <button id="hintBtn" onclick="useHint()" class="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-300 hover:bg-amber-500/20 hover:border-amber-500/50 transition flex items-center justify-center space-x-2 text-sm">
+                        <i class="fa-regular fa-lightbulb"></i>
+                        <span>ヒント表示 (<span id="hintCount">1文字あかす</span>)</span>
+                    </button>
+
+                    <div class="text-slate-500 text-xs hidden sm:block">
+                        キーボードで直接タイプしてください
+                    </div>
+                </div>
+            </div>
+
+            <!-- Onscreen Input overlay for mobile support -->
+            <div class="mt-4 sm:hidden">
+                <input type="text" id="mobileInput" class="w-full px-4 py-3 bg-slate-800 border border-slate-700 rounded-xl text-center text-white text-lg focus:outline-none focus:border-indigo-500" placeholder="ここをタップしてキーボードを表示" autocomplete="off" capitalize="off">
+            </div>
+        </section>
+
+        <!-- SCREEN 3: RESULT SCREEN -->
+        <section id="resultScreen" class="w-full max-w-3xl hidden animate-pop">
+            <div class="bg-slate-800 border border-slate-700 rounded-3xl p-6 sm:p-8 shadow-2xl">
+                
+                <!-- Top Summary Header -->
+                <div class="text-center mb-8">
+                    <span id="resultLevelBadge" class="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold uppercase mb-2 inline-block">準1級 完了</span>
+                    <h2 class="text-3xl font-black text-white">リザルト</h2>
+                </div>
+
+                <!-- Score & Rank Cards Grid -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-8">
+                    <!-- Rank -->
+                    <div class="bg-gradient-to-br from-indigo-900/40 to-slate-900 border border-indigo-500/30 rounded-2xl p-4 text-center">
+                        <div class="text-xs text-slate-400 mb-1">ランク</div>
+                        <div id="resultRank" class="text-4xl font-black text-amber-400">S</div>
+                    </div>
+                    <!-- Total Score -->
+                    <div class="bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4 text-center">
+                        <div class="text-xs text-slate-400 mb-1">合計スコア</div>
+                        <div id="resultTotalScore" class="text-2xl sm:text-3xl font-bold text-indigo-300 font-mono">9,250</div>
+                    </div>
+                    <!-- Avg Speed -->
+                    <div class="bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4 text-center">
+                        <div class="text-xs text-slate-400 mb-1">平均速度</div>
+                        <div id="resultAvgTime" class="text-2xl sm:text-3xl font-bold text-emerald-400 font-mono">1.8s</div>
+                    </div>
+                    <!-- Accuracy -->
+                    <div class="bg-slate-900/60 border border-slate-700/60 rounded-2xl p-4 text-center">
+                        <div class="text-xs text-slate-400 mb-1">ミス数 / 正答率</div>
+                        <div id="resultAccuracy" class="text-2xl sm:text-3xl font-bold text-purple-400 font-mono">98%</div>
+                    </div>
+                </div>
+
+                <!-- Word History List -->
+                <div class="mb-8">
+                    <h3 class="text-sm font-bold text-slate-300 uppercase tracking-wider mb-3 flex items-center justify-between">
+                        <span><i class="fa-solid fa-list-check text-indigo-400 mr-2"></i>問題ログ一覧</span>
+                        <span class="text-xs font-normal text-slate-500">全10問</span>
+                    </h3>
+                    
+                    <div class="max-h-60 overflow-y-auto rounded-xl border border-slate-700/80 bg-slate-900/80">
+                        <table class="w-full text-left border-collapse text-xs sm:text-sm">
+                            <thead class="bg-slate-800/90 sticky top-0 text-slate-400 font-semibold border-b border-slate-700">
+                                <tr>
+                                    <th class="p-3">英単語</th>
+                                    <th class="p-3">意味</th>
+                                    <th class="p-3 text-center">タイム</th>
+                                    <th class="p-3 text-center">ミス</th>
+                                    <th class="p-3 text-right">スコア</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resultTableBody" class="divide-y divide-slate-800 text-slate-300">
+                                <!-- Dynamic rows -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Bottom Navigation Buttons -->
+                <div class="flex flex-col sm:flex-row gap-3">
+                    <button onclick="retryGame()" class="flex-1 py-3.5 px-6 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-rotate-right"></i>
+                        <span>もう一度挑戦</span>
+                    </button>
+                    <button onclick="showLevelSelect()" class="flex-1 py-3.5 px-6 rounded-xl bg-slate-700 hover:bg-slate-600 text-slate-200 font-bold transition flex items-center justify-center space-x-2">
+                        <i class="fa-solid fa-list"></i>
+                        <span>レベル選択に戻る</span>
+                    </button>
+                </div>
+
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-4 text-center text-xs text-slate-500">
+        <p>英検®は公益財団法人 日本英語検定協会の登録商標です。このコンテンツは日本英語検定協会の承認・推奨等を受けたものではありません。</p>
+    </footer>
+
+    <script>
+        // Vocabulary dataset categorized by Eiken levels
+        const WORD_DATABASE = {
+            '5': [
+                { word: 'apple', meaning: 'りんご' },
+                { word: 'book', meaning: '本' },
+                { word: 'cat', meaning: '猫' },
+                { word: 'dog', meaning: '犬' },
+                { word: 'desk', meaning: '机' },
+                { word: 'friend', meaning: '友達' },
+                { word: 'house', meaning: '家' },
+                { word: 'music', meaning: '音楽' },
+                { word: 'school', meaning: '学校' },
+                { word: 'teacher', meaning: '先生' },
+                { word: 'student', meaning: '生徒' },
+                { word: 'water', meaning: '水' }
+            ],
+            '4': [
+                { word: 'always', meaning: 'いつも' },
+                { word: 'bridge', meaning: '橋' },
+                { word: 'camera', meaning: 'カメラ' },
+                { word: 'doctor', meaning: '医者' },
+                { word: 'family', meaning: '家族' },
+                { word: 'island', meaning: '島' },
+                { word: 'library', meaning: '図書館' },
+                { word: 'mountain', meaning: '山' },
+                { word: 'station', meaning: '駅' },
+                { word: 'weather', meaning: '天気' },
+                { word: 'travel', meaning: '旅行する' },
+                { word: 'hospital', meaning: '病院' }
+            ],
+            '3': [
+                { word: 'accident', meaning: '事故' },
+                { word: 'building', meaning: '建物' },
+                { word: 'culture', meaning: '文化' },
+                { word: 'future', meaning: '未来' },
+                { word: 'hospital', meaning: '病院' },
+                { word: 'invent', meaning: '発明する' },
+                { word: 'memory', meaning: '思い出、記憶' },
+                { word: 'necessary', meaning: '必要な' },
+                { word: 'protect', meaning: '保護する' },
+                { word: 'science', meaning: '科学' },
+                { word: 'traditional', meaning: '伝統的な' },
+                { word: 'universe', meaning: '宇宙' }
+            ],
+            'pre2': [
+                { word: 'achieve', meaning: '達成する' },
+                { word: 'benefit', meaning: '利益、恩恵' },
+                { word: 'convenient', meaning: '便利な' },
+                { word: 'decrease', meaning: '減少する' },
+                { word: 'environment', meaning: '環境' },
+                { word: 'increase', meaning: '増加する' },
+                { word: 'pollution', meaning: '汚染' },
+                { word: 'recycle', meaning: 'リサイクルする' },
+                { word: 'solution', meaning: '解決策' },
+                { word: 'volunteer', meaning: 'ボランティア' },
+                { word: 'opportunity', meaning: '機会' },
+                { word: 'experience', meaning: '経験' }
+            ],
+            '2': [
+                { word: 'abundance', meaning: '豊富、大量' },
+                { word: 'candidate', meaning: '候補者' },
+                { word: 'discipline', meaning: '規律、しつけ' },
+                { word: 'efficient', meaning: '効率的な' },
+                { word: 'guarantee', meaning: '保証する' },
+                { word: 'investigate', meaning: '調査する' },
+                { word: 'negotiate', meaning: '交渉する' },
+                { word: 'phenomenon', meaning: '現象' },
+                { word: 'significant', meaning: '重要な、重大な' },
+                { word: 'temporary', meaning: '一時的な' },
+                { word: 'reluctant', meaning: '気が進まない' },
+                { word: 'substantial', meaning: 'かなりの、相当な' }
+            ],
+            'pre1': [
+                { word: 'advocate', meaning: '提唱する、支持者' },
+                { word: 'comprehensive', meaning: '総合的な、包摂的な' },
+                { word: 'deteriorate', meaning: '悪化する' },
+                { word: 'eloquent', meaning: '雄弁な' },
+                { word: 'fluctuate', meaning: '変動する' },
+                { word: 'inevitable', meaning: '避けられない' },
+                { word: 'meticulous', meaning: '細心の注意を払う' },
+                { word: 'persistent', meaning: '粘り強い、持続的な' },
+                { word: 'resilient', meaning: '復元力のある、立ち直りが早い' },
+                { word: 'subsequent', meaning: 'その後の' },
+                { word: 'unprecedented', meaning: '前例のない' },
+                { word: 'versatile', meaning: '多才な、万能の' }
+            ],
+            '1': [
+                { word: 'acquiesce', meaning: '黙認する、おとなしく従う' },
+                { word: 'belligerent', meaning: '好戦的な' },
+                { word: 'circumscribe', meaning: '制限する、囲む' },
+                { word: 'ephemeral', meaning: '儚い、短命の' },
+                { word: 'gregarious', meaning: '社交的な' },
+                { word: 'ubiquitous', meaning: '至る所にある' },
+                { word: 'juxtapose', meaning: '並置する' },
+                { word: 'magnanimous', meaning: '寛大な' },
+                { word: 'nefarious', meaning: '極悪な' },
+                { word: 'ostentatious', meaning: '見栄を張る、誇示する' },
+                { word: 'quintessential', meaning: '典型的な' },
+                { word: 'scrupulous', meaning: '良心的な、慎重な' }
+            ]
+        };
+
+        const LEVEL_NAMES = {
+            '5': '英検 5級',
+            '4': '英検 4級',
+            '3': '英検 3級',
+            'pre2': '英検 準2級',
+            '2': '英検 2級',
+            'pre1': '英検 準1級',
+            '1': '英検 1級'
+        };
+
+        // Game State Variables
+        let currentLevel = '5';
+        let questionList = [];
+        let currentQuestionIndex = 0;
+        let currentCharIndex = 0;
+        
+        let questionStartTime = 0;
+        let questionTimerInterval = null;
+        let currentQuestionElapsedSec = 0;
+        let currentQuestionMisses = 0;
+        let hintRevealedLength = 0;
+
+        let sessionResults = []; // Stores result objects per word
+        let soundEnabled = true;
+
+        // Web Audio API Sound Synthesizer
+        let audioCtx = null;
+
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            return audioCtx;
+        }
+
+        function playSound(type) {
+            if (!soundEnabled) return;
+            try {
+                const ctx = getAudioContext();
+                if (ctx.state === 'suspended') {
+                    ctx.resume();
+                }
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+
+                const now = ctx.currentTime;
+
+                if (type === 'type') {
+                    // Quick high tone
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(800, now + 0.05);
+                    gain.gain.setValueAtTime(0.15, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05);
+                    osc.start(now);
+                    osc.stop(now + 0.05);
+                } else if (type === 'miss') {
+                    // Low buzz
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(180, now);
+                    osc.frequency.linearRampToValueAtTime(110, now + 0.1);
+                    gain.gain.setValueAtTime(0.2, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now);
+                    osc.stop(now + 0.1);
+                } else if (type === 'complete') {
+                    // Success arpeggio
+                    const notes = [523.25, 659.25, 783.99, 1046.50];
+                    notes.forEach((freq, idx) => {
+                        const noteOsc = ctx.createOscillator();
+                        const noteGain = ctx.createGain();
+                        noteOsc.connect(noteGain);
+                        noteGain.connect(ctx.destination);
+                        
+                        noteOsc.type = 'sine';
+                        noteOsc.frequency.setValueAtTime(freq, now + idx * 0.06);
+                        noteGain.gain.setValueAtTime(0.15, now + idx * 0.06);
+                        noteGain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 0.15);
+                        
+                        noteOsc.start(now + idx * 0.06);
+                        noteOsc.stop(now + idx * 0.06 + 0.15);
+                    });
+                }
+            } catch (e) {
+                console.error("Audio error:", e);
+            }
+        }
+
+        function toggleSound() {
+            soundEnabled = !soundEnabled;
+            const icon = document.getElementById('soundIcon');
+            if (soundEnabled) {
+                icon.className = 'fa-solid fa-volume-high text-sm';
+            } else {
+                icon.className = 'fa-solid fa-volume-xmark text-sm text-rose-400';
+            }
+        }
+
+        function showLevelSelect() {
+            clearInterval(questionTimerInterval);
+            document.getElementById('levelScreen').classList.remove('hidden');
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+        }
+
+        function startGame(levelKey) {
+            currentLevel = levelKey;
+            
+            // Randomly pick 10 words from level pool
+            const pool = [...WORD_DATABASE[levelKey]];
+            // Shuffle array
+            for (let i = pool.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [pool[i], pool[j]] = [pool[j], pool[i]];
+            }
+            questionList = pool.slice(0, 10);
+
+            currentQuestionIndex = 0;
+            sessionResults = [];
+
+            document.getElementById('levelBadge').innerText = LEVEL_NAMES[levelKey];
+            document.getElementById('levelScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('gameScreen').classList.remove('hidden');
+
+            loadQuestion();
+        }
+
+        function retryGame() {
+            startGame(currentLevel);
+        }
+
+        function loadQuestion() {
+            if (currentQuestionIndex >= questionList.length) {
+                finishGame();
+                return;
+            }
+
+            const currentObj = questionList[currentQuestionIndex];
+            currentCharIndex = 0;
+            currentQuestionMisses = 0;
+            hintRevealedLength = 0;
+
+            // Reset UI counters
+            document.getElementById('questionCounter').innerText = `${currentQuestionIndex + 1} / ${questionList.length} 問`;
+            document.getElementById('missCounter').innerText = '0';
+            document.getElementById('japaneseMeaning').innerText = currentObj.meaning;
+            
+            // Progress Bar
+            const progressPercent = (currentQuestionIndex / questionList.length) * 100;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+
+            // Reset Mobile Input if present
+            const mobileInput = document.getElementById('mobileInput');
+            if (mobileInput) mobileInput.value = '';
+
+            renderWordLetters();
+            updateScorePreview();
+
+            // Reset & Start Timer
+            clearInterval(questionTimerInterval);
+            questionStartTime = performance.now();
+            currentQuestionElapsedSec = 0;
+            document.getElementById('questionTimer').innerText = '0.0s';
+            
+            questionTimerInterval = setInterval(() => {
+                const now = performance.now();
+                currentQuestionElapsedSec = (now - questionStartTime) / 1000;
+                document.getElementById('questionTimer').innerText = `${currentQuestionElapsedSec.toFixed(1)}s`;
+                updateScorePreview();
+            }, 100);
+        }
+
+        function renderWordLetters() {
+            const currentWord = questionList[currentQuestionIndex].word;
+            const container = document.getElementById('wordDisplay');
+            container.innerHTML = '';
+
+            for (let i = 0; i < currentWord.length; i++) {
+                const char = currentWord[i];
+                const span = document.createElement('span');
+                span.id = `char-${i}`;
+                span.className = 'px-1 sm:px-1.5 py-1 rounded transition-all duration-150 inline-block min-w-[24px] sm:min-w-[32px] text-center border-b-2 ';
+
+                if (i < currentCharIndex) {
+                    // Correctly typed characters
+                    span.innerText = char;
+                    span.classList.add('text-emerald-400', 'border-emerald-500', 'bg-emerald-500/10');
+                } else if (i === currentCharIndex) {
+                    // Current active character target
+                    if (i < hintRevealedLength) {
+                        span.innerText = char;
+                        span.classList.add('text-slate-400', 'border-indigo-400', 'bg-indigo-500/20', 'animate-pulse-fast');
+                    } else {
+                        span.innerText = '_';
+                        span.classList.add('text-indigo-300', 'border-indigo-400', 'bg-indigo-500/20', 'animate-pulse-fast');
+                    }
+                } else if (i < hintRevealedLength) {
+                    // Revealed via hint
+                    span.innerText = char;
+                    span.classList.add('text-slate-500', 'border-slate-700');
+                } else {
+                    // Hidden/Placeholder
+                    span.innerText = '_';
+                    span.classList.add('text-slate-600', 'border-slate-800');
+                }
+
+                container.appendChild(span);
+            }
+
+            // Update Hint Button Label
+            const hintBtn = document.getElementById('hintBtn');
+            if (currentCharIndex < currentWord.length) {
+                document.getElementById('hintCount').innerText = `1文字表示 (-100pt)`;
+            }
+        }
+
+        function useHint() {
+            const currentWord = questionList[currentQuestionIndex].word;
+            if (hintRevealedLength < currentWord.length) {
+                // Advance hint count at least up to currentCharIndex + 1
+                hintRevealedLength = Math.max(hintRevealedLength + 1, currentCharIndex + 1);
+                playSound('type');
+                renderWordLetters();
+                updateScorePreview();
+            }
+        }
+
+        function calculateWordScore(timeSec, misses, hintsUsed) {
+            // Base Score: 1000
+            // Deductions: Time (50pt / sec), Misses (80pt / miss), Hints (100pt / hint char)
+            const base = 1000;
+            const timePenalty = Math.round(timeSec * 50);
+            const missPenalty = misses * 80;
+            const hintPenalty = hintsUsed * 100;
+
+            const finalScore = Math.max(100, base - timePenalty - missPenalty - hintPenalty);
+            return finalScore;
+        }
+
+        function updateScorePreview() {
+            const currentScore = calculateWordScore(currentQuestionElapsedSec, currentQuestionMisses, hintRevealedLength);
+            document.getElementById('currentScorePreview').innerText = currentScore;
+        }
+
+        function handleInputChar(inputChar) {
+            const targetWord = questionList[currentQuestionIndex].word;
+            const expectedChar = targetWord[currentCharIndex].toLowerCase();
+
+            if (inputChar.toLowerCase() === expectedChar) {
+                // Correct key press
+                playSound('type');
+                currentCharIndex++;
+
+                if (currentCharIndex >= targetWord.length) {
+                    // Word completed!
+                    clearInterval(questionTimerInterval);
+                    playSound('complete');
+
+                    const wordScore = calculateWordScore(currentQuestionElapsedSec, currentQuestionMisses, hintRevealedLength);
+                    
+                    // Save question statistics
+                    sessionResults.push({
+                        word: targetWord,
+                        meaning: questionList[currentQuestionIndex].meaning,
+                        time: currentQuestionElapsedSec,
+                        misses: currentQuestionMisses,
+                        score: wordScore
+                    });
+
+                    // Quick visual feedback container bounce
+                    const container = document.getElementById('wordDisplayContainer');
+                    container.classList.add('border-emerald-500/80');
+                    setTimeout(() => container.classList.remove('border-emerald-500/80'), 250);
+
+                    // Advance question
+                    currentQuestionIndex++;
+                    setTimeout(loadQuestion, 300);
+                } else {
+                    renderWordLetters();
+                }
+            } else {
+                // Miss type
+                playSound('miss');
+                currentQuestionMisses++;
+                document.getElementById('missCounter').innerText = currentQuestionMisses;
+
+                // Shake & error animation
+                const currentSpan = document.getElementById(`char-${currentCharIndex}`);
+                if (currentSpan) {
+                    currentSpan.classList.add('animate-shake', 'text-rose-500', 'border-rose-500');
+                    setTimeout(() => {
+                        currentSpan.classList.remove('animate-shake', 'text-rose-500', 'border-rose-500');
+                    }, 300);
+                }
+                updateScorePreview();
+            }
+        }
+
+        // Global Keydown Listener
+        window.addEventListener('keydown', (e) => {
+            // Only trigger if game screen active
+            const gameScreen = document.getElementById('gameScreen');
+            if (gameScreen.classList.contains('hidden')) return;
+
+            // Ignore modifier keys / function keys
+            if (e.ctrlKey || e.altKey || e.metaKey || e.key.length > 1) {
+                if (e.key === 'Space') {
+                    useHint();
+                    e.preventDefault();
+                }
+                return;
+            }
+
+            // A-Z or a-z typing input
+            if (/^[a-zA-Z]$/.test(e.key)) {
+                handleInputChar(e.key);
+            }
+        });
+
+        // Mobile Onscreen Input Listener Support
+        const mobileInput = document.getElementById('mobileInput');
+        if (mobileInput) {
+            mobileInput.addEventListener('input', (e) => {
+                const val = e.target.value;
+                if (val.length > 0) {
+                    const lastChar = val[val.length - 1];
+                    if (/^[a-zA-Z]$/.test(lastChar)) {
+                        handleInputChar(lastChar);
+                    }
+                    e.target.value = '';
+                }
+            });
+        }
+
+        function finishGame() {
+            document.getElementById('gameScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.remove('hidden');
+
+            document.getElementById('resultLevelBadge').innerText = `${LEVEL_NAMES[currentLevel]} 完了`;
+
+            // Aggregated Calculations
+            let totalScore = 0;
+            let totalTime = 0;
+            let totalMisses = 0;
+            let totalLetters = 0;
+
+            const tbody = document.getElementById('resultTableBody');
+            tbody.innerHTML = '';
+
+            sessionResults.forEach((res) => {
+                totalScore += res.score;
+                totalTime += res.time;
+                totalMisses += res.misses;
+                totalLetters += res.word.length;
+
+                // Render detail row
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-slate-800/50 transition';
+                tr.innerHTML = `
+                    <td class="p-3 font-mono font-bold text-white">${res.word}</td>
+                    <td class="p-3 text-slate-300">${res.meaning}</td>
+                    <td class="p-3 text-center font-mono text-indigo-300">${res.time.toFixed(1)}s</td>
+                    <td class="p-3 text-center font-mono ${res.misses > 0 ? 'text-rose-400 font-bold' : 'text-slate-400'}">${res.misses}</td>
+                    <td class="p-3 text-right font-mono font-bold text-amber-400">${res.score}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            const avgTime = totalTime / sessionResults.length;
+            const accuracy = Math.max(0, Math.round((totalLetters / (totalLetters + totalMisses)) * 100));
+
+            // Populate summary cards
+            document.getElementById('resultTotalScore').innerText = totalScore.toLocaleString();
+            document.getElementById('resultAvgTime').innerText = `${avgTime.toFixed(1)}s`;
+            document.getElementById('resultAccuracy').innerText = `${accuracy}%`;
+
+            // Rank Evaluation
+            let rank = 'C';
+            let rankColor = 'text-slate-400';
+
+            if (totalScore >= 9000 && accuracy >= 95) {
+                rank = 'S';
+                rankColor = 'text-amber-400';
+            } else if (totalScore >= 7500) {
+                rank = 'A';
+                rankColor = 'text-indigo-400';
+            } else if (totalScore >= 5500) {
+                rank = 'B';
+                rankColor = 'text-emerald-400';
+            }
+
+            const rankEl = document.getElementById('resultRank');
+            rankEl.innerText = rank;
+            rankEl.className = `text-4xl sm:text-5xl font-black ${rankColor}`;
+        }
+    </script>
+</body>
+</html>
